@@ -1,8 +1,8 @@
 import client
 import json
 import requests
+from userUI import set_timer, start_timer, pause_timer, cancel_timer
 
-letter_bag = []
 
 letter_frequency_dict = {
     "A": 9, "B": 2, "C": 2, "D": 4, "E": 12, "F": 2, "G": 3, "H": 2, "I": 9, "J": 1, 
@@ -16,35 +16,55 @@ letter_points = {
     "U": 1, "V": 4, "W": 4, "X": 8, "Y": 4, "Z": 10,
 }
 
+class Game:
+    def __init__(self, letter_frequency_dict, letter_points):
+        self.letter_frequency_dict = letter_frequency_dict
+        self.letter_points = letter_points
+        self.letter_bag = []
+    
+    def make_letter_bag(self):
+        letter_bag = []
+        for letter in self.letter_frequency_dict:
+            frequency = self.letter_frequency_dict[letter]
+            while frequency > 0:
+                letter_bag.append(letter)
+                frequency -= 1
+        self.letter_bag = letter_bag
+  
+
+class Player:
+    def __init__(self):
+        self.letters = []
+        self.score = 0
+        self.submitted_words = []
+    
+    def new_letters(self, letter_bag, number_of_letters):
+        self.letters = client.randomize_request(letter_bag, number_of_letters)
+
+    def shuffle_player_letters(self):
+        number_of_letters = len(self.letters)
+        self.letters = client.randomize_request(self.letters, number_of_letters)
+    
+    def user_word_submission(self):
+        valid_word = True
+        score = 0
+        word_entry = input("Enter your word submission: ")
+        for letter in word_entry:
+            if letter.upper() not in self.letters:
+                valid_word = False
+        if not valid_word:
+            print("Invalid word submission. Try again.")
+            self.user_word_submission()
+        else:
+            for letter in word_entry:
+                score += letter_points[letter.upper()]
+            print(f"Your word scored {score} points")
+            self.score += score
+
 def introduction():
     print("Welcome to ScrabbleMania!")
-    print()
     print("Use this application to practice your word finding skills!")
 
-def make_letter_bag(letter_dict = letter_frequency_dict):
-    letter_bag = []
-    for letter in letter_dict:
-        frequency = letter_dict[letter]
-        while frequency > 0:
-            letter_bag.append(letter)
-            frequency -= 1
-    return letter_bag
-
-def get_letters(letter_bag, number_of_letters):
-    """Returns random letters from letter bag"""
-    letters = client.randomize_request(letter_bag, number_of_letters)
-    return letters
-
-def shuffle_letters(letters):
-    number_of_letters = len(letters)
-    letters = client.randomize_request(letters, number_of_letters)
-    return letters
-
-def word_score(word):
-    score = 0
-    for letter in word:
-        score += letter_points[letter.upper()]
-    return score
 
 def send_email(email_address, subject, content):
     req = {"email": email_address, 
@@ -53,10 +73,27 @@ def send_email(email_address, subject, content):
     }
     requests.post("http://127.0.0.1:5000", json=req)
 
-letterBag = make_letter_bag()
-print(client.randomize_request(letterBag, 3))
-print(get_letters(letterBag, 18))
-print(shuffle_letters(["a","b","c","d"]))
-print(word_score("HELlO"))
-send_email("thomrobert9@gmail.com", "Yoyoboy!", "It's your time shawty")
+g1 = Game(letter_frequency_dict, letter_points)
+g1.make_letter_bag()
+p1 = Player()
+
+
+p1.new_letters(g1.letter_bag, 7)
+print(p1.letters)
+p1.shuffle_player_letters()
+print(p1.letters)
+p1.user_word_submission()
+p1.user_word_submission()
+print(p1.score)
+
+
+
+
+
+
+# send_email("thomrobert9@gmail.com", "Yoyoboy!", "It's your time shawty")
+# set_timer("000006","000005","000002")
+# start_timer()
+# print(user_current_letters)
+
 
