@@ -1,5 +1,6 @@
 import client
 import json
+import requests
 
 letter_bag = []
 
@@ -45,9 +46,17 @@ def word_score(word):
         score += letter_points[letter.upper()]
     return score
 
+def send_email(email_address, subject, content):
+    req = {"email": email_address, 
+           "subject": subject, 
+           "content": content
+    }
+    requests.post("http://127.0.0.1:5000", json=req)
+
 letterBag = make_letter_bag()
 print(client.randomize_request(letterBag, 3))
 print(get_letters(letterBag, 18))
 print(shuffle_letters(["a","b","c","d"]))
 print(word_score("HELlO"))
+send_email("thomrobert9@gmail.com", "Yoyoboy!", "It's your time shawty")
 
