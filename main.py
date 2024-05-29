@@ -95,25 +95,11 @@ def introduction():
     print("")
 
 def command_display(commands):
+    print("")
     print("COMMANDS:")
     for command in commands:
         print(f"{command}: {commands[command]}")
     print("")
-
-def command_controller(command_type, game, player):
-    match command_type:
-            case "play":
-                player.user_word_submission(g1)
-            case "shuffle":
-                player.shuffle_player_letters()
-            case "swap":
-                print ("swap entry")
-            case "finished":
-                exit()
-            case "restart":
-                print("restart entry")
-            case "commands":
-                command_display(commands)
 
 def send_email(email_address, subject, content):
     req = {"email": email_address, 
@@ -121,6 +107,39 @@ def send_email(email_address, subject, content):
            "content": content
     }
     requests.post("http://127.0.0.1:5000", json=req)
+
+def finished(player):
+    print("")
+    print(f"Thanks for playing! Your total score was {player.score}")
+    send_email_response = input("Would you like an email containing your submmitted words (yes/no)? ")
+    if send_email_response == "yes":
+        email_address = input("What is your email address? ")
+        subject = "Scrabble Mania - Your submitted words!"
+        content = "Words played: "
+        for word in player.submitted_words:
+            content += f" {word} "
+        send_email(email_address, subject, content)
+    elif send_email_response == "no":
+        print("No email sent. Goodbye.")
+    exit()
+
+def command_controller(command_type, game, player):
+    match command_type:
+            case "play":
+                player.user_word_submission(game)
+            case "shuffle":
+                player.shuffle_player_letters()
+            case "swap":
+                player.new_letters(game.letter_bag)
+            case "finished":
+                finished(player)
+            case "restart":
+                print("restart entry")
+            case "commands":
+                command_display(commands)
+                print(f"Your letters: {player.letters}")
+
+
 
 
 g1 = Game(letter_frequency_dict, letter_points)
@@ -135,8 +154,6 @@ while True:
     command_type = input("Command: ")
     command_controller(command_type, g1, p1)
         
-
-
 # send_email("thomrobert9@gmail.com", "Yoyoboy!", "It's your time shawty")
 # set_timer("000006","000005","000002")
 # start_timer()
