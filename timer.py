@@ -64,6 +64,5 @@ while True:
                 prompt_1 = time_converter(time_data[6:12])
                 prompt_2 = time_converter(time_data[12:18])
                 timer_countdown(countdown_start, prompt_1, prompt_2)
-
-
+                time.sleep(1)
 
