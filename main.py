@@ -1,7 +1,12 @@
 import client
 import json
 import requests
+import threading
+import time
+import tkinter
+from tkinter import messagebox
 from userUI import set_timer, start_timer, pause_timer, cancel_timer
+
 
 
 letter_frequency_dict = {
@@ -27,6 +32,35 @@ commands = {
     "commands": "See this list again."
 }
 
+word_entry_time = "000010"
+word_entry_reminder_1 = "000005"
+word_entry_reminder_2 = "000002"
+
+
+def game_timer(player, t1, t2, t3):
+    root = tkinter.Tk()
+    root.withdraw()
+    set_timer(t1, t2, t3)
+    start_timer()
+    while True:
+        with open('alerts.txt', 'r+', encoding='utf-8') as alerts_file:
+            alert = alerts_file.read()
+            if alert == t2:
+                messagebox.showinfo("Alert", f"You have {t2} seconds remaining.")
+                time.sleep(1.1)
+                print("This happened")
+            if alert == t3:
+                messagebox.showinfo("Alert", f"You have {t3} seconds remaining.")
+                alerts_file.write("")
+                time.sleep(1)
+                print("This happened")
+            if alert == "0s":
+                break
+
+    messagebox.showinfo("Alert", "You are out of time. Game has ended.")
+    finished(player)
+
+
 class Game:
     def __init__(self, letter_frequency_dict, letter_points):
         self.letter_frequency_dict = letter_frequency_dict
@@ -50,6 +84,8 @@ class Player:
         self.submitted_words = []
     
     def new_letters(self, letter_bag, number_of_letters=7):
+        #game_timer_thread = threading.Thread(target=game_timer)
+        #game_timer_thread.start()
         if len(letter_bag) < 7:
             number_of_letters = len(letter_bag)
         self.letters = client.randomize_request(letter_bag, number_of_letters)
@@ -70,7 +106,7 @@ class Player:
                 valid_word = False
         if not valid_word:
             print("Invalid word submission. Try again.")
-            self.user_word_submission()
+            self.user_word_submission(game)
         else:
             for letter in word_entry:
                 letter = letter.upper()
@@ -80,6 +116,9 @@ class Player:
             game.make_letter_bag()
             self.score += score
             print(f"Your word scored {score} points. Your current total is {self.score} points.")
+
+            # Stop timer thread
+            # game_timer_thread.join()
 
             # Display new letters to user
             self.new_letters(game.letter_bag)
@@ -147,13 +186,14 @@ g1.make_letter_bag()
 p1 = Player()
 introduction()
 command_display(commands)
-
 p1.new_letters(g1.letter_bag)
+game_timer_thread = threading.Thread(target=game_timer(p1, word_entry_time, word_entry_reminder_1, word_entry_reminder_2))
+game_timer_thread.start()
 
 while True:
     command_type = input("Command: ")
     command_controller(command_type, g1, p1)
-        
+
 # send_email("thomrobert9@gmail.com", "Yoyoboy!", "It's your time shawty")
 # set_timer("000006","000005","000002")
 # start_timer()

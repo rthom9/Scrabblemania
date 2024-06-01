@@ -9,6 +9,13 @@ def time_converter(time_string):
     total_seconds = (hours_int * 3600) + (minutes_int * 60) + seconds_int
     return total_seconds
 
+def time_reverter(time_int):
+    hours = str(time_int // 3600)
+    time_int = time_int % 3600
+    minutes = str(time_int // 60)
+    seconds = str(time_int % 60)
+    return hours.rjust(2, "0") + minutes.rjust(2, "0") + seconds.rjust(2, "0")
+
 
 def timer_countdown(countdown_time, reminder_1, reminder_2):
     while countdown_time:
@@ -19,25 +26,21 @@ def timer_countdown(countdown_time, reminder_1, reminder_2):
             print(countdown_time)
             time.sleep(1)
             countdown_time -= 1
-
             if countdown_time == reminder_1 and reminder_2 != 0:
-                with open('alerts.txt', 'w+', encoding='utf-8') as alerts_file:
-                    #alerts_file.seek(0)
-                    #alerts_file.truncate()
-                    alerts_file.write(str(reminder_1) + "s")
-                print("You have " + str(reminder_1) + " seconds left.")
+                with open('alerts.txt', 'r+', encoding='utf-8') as alerts_file:
+                    alerts_file.seek(0)
+                    alerts_file.truncate()
+                    alerts_file.write(time_reverter(reminder_1))
             if countdown_time == reminder_2 and reminder_1 != 0:
-                with open('alerts.txt', 'w+', encoding='utf-8') as alerts_file:
-                    #alerts_file.seek(0)
-                    #alerts_file.truncate()
-                    alerts_file.write(str(reminder_2) + "s")
-                print("You have " + str(reminder_2) + " seconds left.")
+                with open('alerts.txt', 'r+', encoding='utf-8') as alerts_file:
+                    alerts_file.seek(0)
+                    alerts_file.truncate()
+                    alerts_file.write(time_reverter(reminder_2))
             if countdown_time == 0:
-                with open('alerts.txt', 'w+', encoding='utf-8') as alerts_file:
-                    #alerts_file.seek(0)
-                    #alerts_file.truncate()
+                with open('alerts.txt', 'r+', encoding='utf-8') as alerts_file:
+                    alerts_file.seek(0)
+                    alerts_file.truncate()
                     alerts_file.write(str(0) + "s")
-                print("Time is up!")
                 # change controller.txt to stop
                 with open('controller.txt', 'r+', encoding='utf-8') as controller_file:
                     controller_file.seek(0)

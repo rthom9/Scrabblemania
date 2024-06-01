@@ -10,6 +10,8 @@ def set_timer(total_time, reminder1="000000", reminder2="000000"):
         time_file.truncate()
         time_file.write(str(total_time) + str(reminder1) + str(reminder2))
         time_file.close()
+        alerts_file = open('alerts.txt', 'w+', encoding='utf-8')
+        alerts_file.close()
     else:
         raise TypeError("Inappropriate argument types")
 
