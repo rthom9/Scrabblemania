@@ -29,10 +29,12 @@ def send(msg):
         received_msg_json = json.loads(received_msg)
         return received_msg_json
     
-def dictionary_lookup(word, number_of_definitions):
-    """Accepts word as an array and number of definitions requested."""
+def dictionary_lookup(word, number_of_definitions=2):
+    """
+        Accepts word as an array and number of definitions requested.
+        If word not found, returns invalid word.
+    """
     word_request = [word, number_of_definitions]
     word_request_string = json.dumps(word_request)
     word_definition = send(word_request_string)
     return word_definition
-

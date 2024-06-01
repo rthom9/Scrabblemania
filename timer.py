@@ -45,7 +45,7 @@ def timer_countdown(countdown_time, reminder_1, reminder_2):
                         time_file.seek(0)
                         time_file.truncate()
                         time_file.write("000000000000000000")
-        if command == "reset":
+        if command == "stop":
             break
     return
 

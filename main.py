@@ -2,10 +2,8 @@ import client
 import dictionary_client
 import requests
 import threading
-import time
-import tkinter
-from tkinter import messagebox
-from userUI import set_timer, start_timer, cancel_timer
+import copy
+from userUI import set_timer, start_timer, cancel_timer, monitor_timer
 
 
 letter_frequency_dict = {
@@ -30,32 +28,12 @@ commands = {
     "commands": "See this list again."
 }
 
-game_time_limit = "000100"
 
-def game_timer(player, game, time_limit):
-    root = tkinter.Tk()
-    root.withdraw()
-    # t1 = "000005"
-    t2 = "000015"
-    t3 = "000000"
-    set_timer(time_limit, t2, t3)
+def game_timer(game, time_limit):
+    cancel_timer()              # in cases where timer is already running
+    set_timer(time_limit)
     start_timer()
-    while True:
-        with open('alerts.txt', 'r+', encoding='utf-8') as alerts_file:
-            alert = alerts_file.read()
-            if alert == "0s":
-                break
-            if alert == t2:
-                messagebox.showinfo("Alert", f"You have {t2} seconds remaining.")
-                time.sleep(1.1)
-            if alert == t3:
-                messagebox.showinfo("Alert", f"You have {t3} seconds remaining.")
-                alerts_file.write("")
-                time.sleep(1)
-        #time.sleep(1)
-    print("\nTime is up! Press [ENTER].")
-    root.wm_attributes("-topmost", 1)
-    messagebox.showinfo(title="Alert", message="You are out of time. Game has ended.", parent=root)
+    monitor_timer()
     game.game_state = "OFF"
 
 
@@ -65,16 +43,16 @@ class Game:
         self.letter_points = letter_points
         self.letter_bag = []
         self.game_time = None
-        self.reminder_time_1 = "000100"
+        self.reminder_time_1 = None
         self.reminder_time_2 = None
         self.game_state = "OFF"
-
-    def get_reminder_time(self):
-        return self.reminder_time_1
+        self.player = None
     
-    def start_game(self, player):
+    def start_game(self):
         self.make_letter_bag()
-        player.new_letters(self.letter_bag)
+        p1 = Player()
+        self.player = p1
+        p1.new_letters(self.letter_bag)
         self.game_state = "ON"
 
     def make_letter_bag(self):
@@ -90,6 +68,7 @@ class Game:
         definitions = dictionary_client.dictionary_lookup(player.submitted_words[-1], 2)
         for definition in definitions:
             print(definition)
+            print("")
   
 
 class Player:
@@ -103,40 +82,45 @@ class Player:
             number_of_letters = len(letter_bag)
         self.letters = client.randomize_request(letter_bag, number_of_letters)
         print(f"Your letters: {self.letters}")
+        print("")
 
     def shuffle_player_letters(self):
         number_of_letters = len(self.letters)
         self.letters = client.randomize_request(self.letters, number_of_letters)
         print(f"Your letters: {self.letters}")
+        print("")
     
+    def word_validation(self, word):
+        # Same length
+        players_letters = copy.deepcopy(self.letters)
+        for letter in word:
+            if letter.upper() not in players_letters:
+                return False
+            players_letters.remove(letter)
+        if dictionary_client.dictionary_lookup(word) == "Invalid word":
+            return False
+        
+        return True
+
     def user_word_submission(self, game):
         """Prompts player to submit word. If valid, displays score of word, updates player's total score, removes used letters from letter_bag."""
-        valid_word = True
         score = 0
-        word_entry = input("Enter your word submission: ")
-        for letter in word_entry:
-            if letter.upper() not in self.letters:
-                valid_word = False
-        if not valid_word:
-            print("Invalid word submission. Try again.")
-            self.user_word_submission(game)
-        else:
+        word_entry = input("Enter your word submission: ").upper()
+        if self.word_validation(word_entry):
             for letter in word_entry:
-                letter = letter.upper()
                 score += letter_points[letter]
                 # remove used letter from current letter bag
                 game.letter_frequency_dict[letter] -= 1
             game.make_letter_bag()
             self.score += score
             print(f"Your word scored {score} points. Your current total is {self.score} points.")
-            self.submitted_words.append(word_entry)
-
-            # Stop timer thread
-            # game_timer_thread.join()
-
-            # Display new letters to user
+            self.submitted_words.append([word_entry, self.letters, score])
             self.new_letters(game.letter_bag)
-            
+        else:
+            print("Invalid word submission. Try again.")
+            print("")
+
+          
 
 def introduction():
     print("")
@@ -146,10 +130,12 @@ def introduction():
     print("You will be given a set of 7 letters from the letter bag. Enter your best word. \nOnce the bag is near "
           "empty, you will be given only the remaining letters.")
     print("Enter the commands listed below to navigate this game.")
+    print("")
     command_display(commands)
+    
 
 def command_display(commands):
-    print("")
+    # print("")
     print("COMMANDS:")
     for command in commands:
         print(f"{command}: {commands[command]}")
@@ -172,53 +158,58 @@ def finished(player):
         subject = "Scrabble Mania - Your submitted words!"
         content = "Words played: "
         for word in player.submitted_words:
-            content += f" {word} "
+            content += f" {word[0]} "
         send_email(email_address, subject, content)
     elif send_email_response == "no":
         print("No email sent. Goodbye.")
         print("")
     exit()
 
-def command_controller(command_type, game, player):
+def command_controller(command_type, game):
     match command_type:
             case "play":
-                player.user_word_submission(game)
+                game.player.user_word_submission(game)
             case "shuffle":
-                player.shuffle_player_letters()
+                game.player.shuffle_player_letters()
             case "swap":
-                player.new_letters(game.letter_bag)
+                game.player.new_letters(game.letter_bag)
             case "definition":
-                game.definition_lookup(player)
+                game.definition_lookup(game.player)
             case "finished":
-                finished(player)
-            case "restart":
-                print("restart entry")
+                finished(game.player)
+            case "undo":
+                last_played = game.player.submitted_words[-1]
+                last_played_word = last_played[0]
+                last_played_letters = last_played[1]
+                last_played_score = last_played[2]
+
+                # update player's socre
+                print(f"Undid [{last_played_word}] entry.")
+                print("")
+                game.player.score -= last_played_score
+                game.player.letters = last_played_letters
+                print(f"Your letters: {game.player.letters}")
             case "commands":
                 command_display(commands)
-                print(f"Your letters: {player.letters}")
+                print(f"Your letters: {game.player.letters}")
 
 
 def game_loop(game, player):
     while game.game_state == "ON":
         command_type = input("Enter command: ")
-        command_controller(command_type, g1, p1)
+        command_controller(command_type, g1)
     finished(player)
 
 
 #Start Game
 introduction()
 g1 = Game(letter_frequency_dict, letter_points)
-p1 = Player()
 
-time_limit = input("Set a time limit for your game. Please use HHMMSS format. You will be notified when 60s remaining: ")
-game_timer_thread = threading.Thread(target=game_timer, args=(p1, g1, time_limit))
+time_limit = input("Set a time limit for your game. Please use HHMMSS format: ")
+game_timer_thread = threading.Thread(target=game_timer, args=(g1, time_limit))
 game_loop_thread = threading.Thread(target=game_loop)
 
-g1.start_game(p1)
+g1.start_game()
 game_timer_thread.start()
-game_loop(g1, p1)
-
-
-
-
+game_loop(g1, g1.player)
 
