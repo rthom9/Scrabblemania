@@ -25,7 +25,7 @@ commands = {
     "swap": "Swap all of your current letters.",
     "definition": "Lookup definition of last submitted word.",
     "finished": "End your session.",
-    "restart": "End current session and restart.",
+    "undo": "Undo most recent word submission.",
     "commands": "See this list again."
 }
 
