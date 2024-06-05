@@ -3,6 +3,7 @@ import dictionary_client
 import requests
 import threading
 import copy
+import sys
 from userUI import set_timer, start_timer, cancel_timer, monitor_timer
 
 
@@ -65,7 +66,7 @@ class Game:
         self.letter_bag = letter_bag
     
     def definition_lookup(self, player):
-        definitions = dictionary_client.dictionary_lookup(player.submitted_words[-1], 2)
+        definitions = dictionary_client.dictionary_lookup(player.submitted_words[-1][0], 2)
         for definition in definitions:
             print(definition)
             print("")
@@ -160,10 +161,12 @@ def finished(player):
         for word in player.submitted_words:
             content += f" {word[0]} "
         send_email(email_address, subject, content)
+        print("Email sent. Goodbye.")
+        print("")
     elif send_email_response == "no":
         print("No email sent. Goodbye.")
         print("")
-    exit()
+    sys.exit()
 
 def command_controller(command_type, game):
     match command_type:
@@ -199,6 +202,7 @@ def game_loop(game, player):
         command_type = input("Enter command: ")
         command_controller(command_type, g1)
     finished(player)
+    sys.exit()
 
 
 #Start Game
