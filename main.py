@@ -149,24 +149,11 @@ def send_email(email_address, subject, content):
     }
     requests.post("http://127.0.0.1:5000", json=req)
 
-def finished(player):
+def finished(game):
+    game.game_state = "OFF"
     cancel_timer()
     print("")
-    print(f"Thanks for playing! Your total score was {player.score}")
-    send_email_response = input("Would you like an email containing your submmitted words (yes/no)? ")
-    if send_email_response == "yes":
-        email_address = input("What is your email address? ")
-        subject = "Scrabble Mania - Your submitted words!"
-        content = "Words played: "
-        for word in player.submitted_words:
-            content += f" {word[0]} "
-        send_email(email_address, subject, content)
-        print("Email sent. Goodbye.")
-        print("")
-    elif send_email_response == "no":
-        print("No email sent. Goodbye.")
-        print("")
-    sys.exit()
+    
 
 def command_controller(command_type, game):
     match command_type:
@@ -179,7 +166,7 @@ def command_controller(command_type, game):
             case "definition":
                 game.definition_lookup(game.player)
             case "finished":
-                finished(game.player)
+                finished(game)
             case "undo":
                 last_played = game.player.submitted_words[-1]
                 last_played_word = last_played[0]
@@ -201,8 +188,22 @@ def game_loop(game, player):
     while game.game_state == "ON":
         command_type = input("Enter command: ")
         command_controller(command_type, g1)
-    finished(player)
-    sys.exit()
+
+    print(f"Thanks for playing! Your total score was {player.score}")
+    send_email_response = input("Would you like an email containing your submmitted words (yes/no)? ")
+    if send_email_response == "yes":
+        email_address = input("What is your email address? ")
+        subject = "Scrabble Mania - Your submitted words!"
+        content = "Words played: "
+        for word in player.submitted_words:
+            content += f" {word[0]} "
+        send_email(email_address, subject, content)
+        print("Email sent. Goodbye.")
+        print("")
+    elif send_email_response == "no":
+        print("No email sent. Goodbye.")
+        print("")
+    # sys.exit()
 
 
 #Start Game
@@ -216,4 +217,5 @@ game_loop_thread = threading.Thread(target=game_loop)
 g1.start_game()
 game_timer_thread.start()
 game_loop(g1, g1.player)
+game_timer_thread.join()
 
