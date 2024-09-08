@@ -1,6 +1,5 @@
-# Author: Robert Thom
-# GitHub username: rthom9
-# Description: Client-side code to interact with randomizer microservice via websocket.
+# Description: Client-side code for use of randomizer microservice. Connects fo websocket
+# server to send randomization requests and receive response for same.
 
 import socket
 import json

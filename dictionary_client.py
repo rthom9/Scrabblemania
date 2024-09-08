@@ -1,5 +1,3 @@
-# Author: Robert Thom
-# GitHub username: rthom9
 # Description: Client-side code for use of dictionary microservice. Microservice will access Merriam-Webster API.
 
 import socket
