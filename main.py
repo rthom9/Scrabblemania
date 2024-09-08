@@ -241,7 +241,6 @@ class Player:
                     # remove letter from player's current letters
                 players_letters.remove(letter)
 
-            print("letters after play; ", players_letters)
             game.make_letter_bag()
             self.score += score
             print(f"Your word scored {score} points. Your current total is {self.score} points.")
