@@ -9,6 +9,7 @@
 import randomizer_client
 import dictionary_client
 import requests
+import re
 import threading
 import copy
 import time
@@ -87,7 +88,14 @@ class Game:
         print("")
         command_display(self.commands)
         print("")
-        self.game_time = input("Set a time limit for your game. Please use HHMMSS format: ")
+
+        # Request time limit, validate format.
+        while True:
+            self.game_time = input("Set a time limit for your game. Please use HHMMSS format: ")
+            if re.match(r'^\d{2}\d{2}\d{2}$', self.game_time):
+                break
+            else:
+                print("Invalid time format. Please use HHMMSS.\n")
 
     def make_letter_bag(self):
         """Creates letter bag represented as list by adding letters based upon frequency detailed in 
