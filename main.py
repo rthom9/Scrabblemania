@@ -1,4 +1,12 @@
-import client
+# Author: Robert Thom
+# GitHub username: rthom9
+# Description: Scrabblemania is a console application that allows users to create high-scoring words
+# from random letters. This project was used to explore the fundamental ideas of microservice architecture and 
+# uses dictionary_lookup, randomizer, and email microservices.
+# This application mimics aspects of Scrabble including a 7-letter player rack, use of 
+# a letter bag, and similar letter scoring sytem.  
+
+import randomizer_client
 import dictionary_client
 import requests
 import threading
@@ -179,7 +187,7 @@ class Player:
         
         if len(letter_bag) < 7:
             number_of_letters = len(letter_bag)
-        new_letters = client.randomize_request(letter_bag, number_of_letters)
+        new_letters = randomizer_client.randomize_request(letter_bag, number_of_letters)
         self.letters += new_letters
         print("")
         print("Your letters: ", " ".join(self.letters))
@@ -191,7 +199,7 @@ class Player:
         letter_bag += self.letters
         
         num_letters_to_swap = len(self.letters)        
-        self.letters = client.randomize_request(letter_bag, num_letters_to_swap)
+        self.letters = randomizer_client.randomize_request(letter_bag, num_letters_to_swap)
         print("")
         print("Your letters: ", " ".join(self.letters))
 
@@ -199,7 +207,7 @@ class Player:
         """Shuffles display of player's existing letters. For the purpose of this project, uses randomizer microservice."""
         
         number_of_letters = len(self.letters)
-        self.letters = client.randomize_request(self.letters, number_of_letters)
+        self.letters = randomizer_client.randomize_request(self.letters, number_of_letters)
         print("")
         print("Your letters: ", " ".join(self.letters))
     

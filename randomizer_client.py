@@ -1,3 +1,7 @@
+# Author: Robert Thom
+# GitHub username: rthom9
+# Description: Client-side code to interact with randomizer microservice via websocket.
+
 import socket
 import json
 
@@ -14,7 +18,7 @@ client.connect(ADDR)
 
 # Send a message
 def send(msg):
-    # When sending messages, need to be encoded into byte format to be sent through socket
+    # Encode messages to byte format to be sent through socket
     message = msg.encode(FORMAT)
     msg_length = len(message)
     send_length = str(msg_length).encode(FORMAT)
@@ -29,4 +33,5 @@ def send(msg):
         return received_msg_json
     
 def randomize_request(values, num):
+    """Accepts an array of values and requested number of random values to be returned"""
     return send(json.dumps({"values": values, "num": num}))

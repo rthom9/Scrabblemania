@@ -1,3 +1,8 @@
+# Reference: https://github.com/nick-socci/cs361-email-service
+# Scope: File
+# Date: 06 / 16 / 2024
+# Purpose: This file was sourced from Nick Socci with permission for use in this project.
+
 import base64
 from email.mime.text import MIMEText
 from google_auth_oauthlib.flow import InstalledAppFlow
